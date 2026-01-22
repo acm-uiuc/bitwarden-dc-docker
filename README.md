@@ -1,2 +1,2 @@
-# bitwarden-dc-docker
+# Bitwarden Directory Connector Docker
 Running the Bitwarden Directory Connector on Docker
