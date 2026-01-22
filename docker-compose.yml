@@ -1,0 +1,16 @@
+services:
+    bwdc:
+        build:
+            context: .
+            args:
+                BWDC_VERSION: 2026.1.0
+        restart: unless-stopped
+        environment:
+            - BW_SERVER
+            - BW_CLIENTID
+            - BW_CLIENTSECRET
+            - BW_DIRECTORY_TYPE
+            - BW_DIRECTORY_KEY
+            - SYNC_INTERVAL_MIN
+        volumes:
+            - ./data.json:/home/bitwarden/.config/Bitwarden Directory Connector/data.json
