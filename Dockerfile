@@ -1,7 +1,7 @@
 # Build stage
-FROM node:20-bookworm AS builder
+FROM node:24-bookworm AS builder
 
-ARG BWDC_VERSION=2026.1.0
+ARG BWDC_VERSION=2026.4.0
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
@@ -39,9 +39,14 @@ RUN useradd -r -s /bin/false bitwarden && \
     chown -R bitwarden:bitwarden /home/bitwarden
 
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh && sed -i 's/\r$//' /entrypoint.sh
+COPY healthcheck.sh /usr/local/bin/healthcheck.sh
+RUN chmod +x /entrypoint.sh /usr/local/bin/healthcheck.sh && \
+    sed -i 's/\r$//' /entrypoint.sh /usr/local/bin/healthcheck.sh
 
 ENV BITWARDENCLI_CONNECTOR_PLAINTEXT_SECRETS=true
+
+HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
+    CMD ["/usr/local/bin/healthcheck.sh"]
 
 USER bitwarden
 ENTRYPOINT ["/entrypoint.sh"]
