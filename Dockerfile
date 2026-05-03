@@ -1,5 +1,5 @@
 # Build stage
-FROM node:24-bookworm AS builder
+FROM node:20-bookworm AS builder
 
 ARG BWDC_VERSION=2026.4.0
 
