@@ -27,11 +27,13 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
-            - name: Install bats
-              run: npm install bats
+            - uses: actions/setup-node@v6
+              with:
+                node-version: 24
+                cache: 'npm'
 
-            - name: Run unit tests
-              run: npx bats tests/unit/
+            - name: Install bats
+              run: npm install -g bats
 
             - name: Fetch latest BWDC version
               id: bwdc_version
@@ -45,10 +47,8 @@ jobs:
             - name: Build image for integration tests
               run: docker build --build-arg BWDC_VERSION=${{ steps.bwdc_version.outputs.version }} -t bwdc-test .
 
-            - name: Run integration tests
-              env:
-                  IMAGE_NAME: bwdc-test
-              run: npx bats tests/integration/
+            - name: Run tests
+              run: ./tests/run_tests.sh
 
     build:
         strategy:
