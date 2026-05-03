@@ -147,6 +147,62 @@ setup_file() {
     [[ "$output" =~ "config ldap.password supersecret" ]]
 }
 
+@test "BW_DIRECTORY_KEY with azure type (numeric) calls bwdc config azure.key" {
+    local cid
+    cid=$(docker run -d \
+        -v "$FIXTURES/mock_bwdc.sh:/usr/local/bin/bwdc" \
+        -v "$FIXTURES/data.json:$CONFIG_PATH" \
+        -e BW_DIRECTORY_TYPE=1 \
+        -e BW_DIRECTORY_KEY=my-azure-secret \
+        -e SYNC_INTERVAL_MIN=60 \
+        "$IMAGE")
+
+    sleep 8
+
+    run docker exec "$cid" cat /tmp/bwdc_calls
+    docker rm -f "$cid" >/dev/null 2>&1
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "config azure.key my-azure-secret" ]]
+}
+
+@test "BW_DIRECTORY_KEY with azure type (string) calls bwdc config azure.key" {
+    local cid
+    cid=$(docker run -d \
+        -v "$FIXTURES/mock_bwdc.sh:/usr/local/bin/bwdc" \
+        -v "$FIXTURES/data.json:$CONFIG_PATH" \
+        -e BW_DIRECTORY_TYPE=azure \
+        -e BW_DIRECTORY_KEY=my-azure-secret \
+        -e SYNC_INTERVAL_MIN=60 \
+        "$IMAGE")
+
+    sleep 8
+
+    run docker exec "$cid" cat /tmp/bwdc_calls
+    docker rm -f "$cid" >/dev/null 2>&1
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "config azure.key my-azure-secret" ]]
+}
+
+@test "azure sync: bwdc config directory is set to type 1" {
+    local cid
+    cid=$(docker run -d \
+        -v "$FIXTURES/mock_bwdc.sh:/usr/local/bin/bwdc" \
+        -v "$FIXTURES/data.json:$CONFIG_PATH" \
+        -e BW_DIRECTORY_TYPE=1 \
+        -e BW_DIRECTORY_KEY=my-azure-secret \
+        -e SYNC_INTERVAL_MIN=60 \
+        "$IMAGE")
+
+    sleep 8
+
+    run docker exec "$cid" cat /tmp/bwdc_calls
+    docker rm -f "$cid" >/dev/null 2>&1
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "config directory 1" ]]
+    [[ "$output" =~ "config azure.key my-azure-secret" ]]
+    [[ "$output" =~ "sync" ]]
+}
+
 @test "bwdc sync is called during the sync loop" {
     local cid
     cid=$(docker run -d \

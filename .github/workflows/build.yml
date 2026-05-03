@@ -33,8 +33,17 @@ jobs:
             - name: Run unit tests
               run: bats tests/unit/
 
+            - name: Fetch latest BWDC version
+              id: bwdc_version
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  VERSION=$(gh release view --repo bitwarden/directory-connector \
+                    --json tagName --jq '.tagName | ltrimstr("v")')
+                  echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
             - name: Build image for integration tests
-              run: docker build -t bwdc-test .
+              run: docker build --build-arg BWDC_VERSION=${{ steps.bwdc_version.outputs.version }} -t bwdc-test .
 
             - name: Run integration tests
               env:
@@ -62,11 +71,15 @@ jobs:
 
             - name: Set version
               id: version
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   if [ -n "${{ inputs.BWDC_VERSION }}" ]; then
                     echo "version=${{ inputs.BWDC_VERSION }}" >> $GITHUB_OUTPUT
                   elif [ "${{ github.event_name }}" = "pull_request" ]; then
-                    echo "version=pr-${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+                    VERSION=$(gh release view --repo bitwarden/directory-connector \
+                      --json tagName --jq '.tagName | ltrimstr("v")')
+                    echo "version=${VERSION}" >> $GITHUB_OUTPUT
                   else
                     echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
                   fi
