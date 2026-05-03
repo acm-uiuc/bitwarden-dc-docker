@@ -28,10 +28,10 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Install bats
-              run: npm install -g bats
+              run: npm install bats
 
             - name: Run unit tests
-              run: bats tests/unit/
+              run: npx bats tests/unit/
 
             - name: Fetch latest BWDC version
               id: bwdc_version
@@ -48,7 +48,7 @@ jobs:
             - name: Run integration tests
               env:
                   IMAGE_NAME: bwdc-test
-              run: ./tests/run_tests.sh
+              run: npx bats tests/integration/
 
     build:
         strategy:
